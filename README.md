@@ -23,15 +23,6 @@ https://xrtor.github.io/Uniq-Copy/
 ## GitHub Pages
 
 הפרויקט מוכן ל-GitHub Pages ללא build וללא התקנות.
-
-ב-GitHub:
-
-1. העלו את הקבצים לריפוזיטורי חדש.
-2. פתחו **Settings → Pages**.
-3. בחרו **Deploy from a branch**.
-4. בחרו את `main` ואת `/ (root)`.
-5. שמרו.
-
 ## פרטיות
 
 כל העיבוד נעשה ב-JavaScript מקומית בדפדפן. המידע שהודבק אינו נשלח לשרת.
