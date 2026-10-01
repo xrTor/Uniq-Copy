@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="כלי עצמאי לניקוי כפילויות מרשימות טקסט, קישורים ונתיבים. עובד כולו בדפדפן.">
+<title>ניקוי כפילויות</title>
+<style>
+body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: #f4f6f8;
+        direction: rtl;
+        margin: 0;
+    }
+
+    .nav-header {
+        background: #2c3e50;
+        color: #fff;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nav-header h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+
+    .tabs {
+        display: flex;
+        border-bottom: 2px solid #ddd;
+        margin-bottom: 20px;
+        gap: 4px;
+    }
+
+    .tab-btn {
+        padding: 10px 20px;
+        cursor: default;
+        background: #fff;
+        border: 2px solid #ddd;
+        border-bottom: 2px solid #fff;
+        border-radius: 5px 5px 0 0;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: -2px;
+    }
+
+    .tab-content {
+        display: block;
+    }
+
+    .data-box {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .sql-editor {
+        width: 100%;
+        min-height: 150px;
+        padding: 10px;
+        font-family: Consolas, Monaco, monospace;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: #2c3e50;
+        color: #ecf0f1;
+        font-size: 14px;
+        box-sizing: border-box;
+        resize: vertical;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        align-items: center;
+    }
+
+    .btn {
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-size: 13px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: 0.2s;
+    }
+
+    .btn-outline {
+        border: 1px solid #ced4da;
+        background: white;
+        color: #495057;
+    }
+
+    .btn-outline:hover {
+        background: #e2e6ea;
+    }
+
+    .ajax-line {
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        font-size: 13px;
+        display: none;
+    }
+
+    .ajax-line.ok {
+        background: #e9fbe9;
+        color: #114b1b;
+    }
+
+    .ajax-line.warn {
+        background: #fff8e6;
+        color: #4a3b00;
+    }
+
+    .ajax-line.info {
+        background: #e9f4fb;
+        color: #114b7b;
+    }
+
+    .dedupe-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .dedupe-title {
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .dedupe-count {
+        opacity: 0.7;
+        font-weight: 600;
+    }
+
+    .stats-line {
+        margin-top: 10px;
+        opacity: 0.85;
+        font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+        .dedupe-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+            textarea { width: 100%; height: 250px; background: #111 !important; color: #00ff00 !important; border: 1px solid #555; padding: 10px; font-family: monospace; border-radius: 4px; resize: vertical; }
+body {background-color: #1A1A1A;}
+.data-box {background-color: #2D2D2D; color: white;}
+
+/* Standalone GitHub version */
+* { box-sizing: border-box; }
+html { color-scheme: dark; }
+body { min-height: 100vh; }
+.nav-header { max-width: 1200px; margin: 0 auto; }
+.container { padding-bottom: 30px; }
+.footer-note {
+    max-width: 1200px;
+    margin: 0 auto 24px;
+    padding: 0 15px;
+    text-align: center;
+    color: #aaa;
+    font-size: 12px;
+}
+textarea { direction: ltr; text-align: left; }
+@media (max-width: 768px) {
+    .container { margin-top: 12px; }
+    .data-box { padding: 14px; }
+    .toolbar { justify-content: center; }
+}
+</style>
+</head>
+<body>
+<center>
+<div class="nav-header">
+    <div><h1>🧽 ניקוי כפילויות</h1></div>
+    <div></div>
+</div>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn" type="button">🧽 ניקוי כפילויות</button>
+    </div>
+
+    <div id="dedupe_tool" class="tab-content">
+        <div class="data-box" id="global_dedupe_box">
+            <h2>ניקוי כפילויות — להשאיר ערך אחד מכל כפילות</h2>
+            <div style="opacity:0.75; margin-top:-6px; margin-bottom:10px; font-size:13px;">
+                מדביקים כל רשימה: לינקים / שורות טקסט / נתיבים. הכלי שומר על הסדר המקורי, מציג רשימה ייחודית, ובנפרד את הערכים שהופיעו יותר מפעם אחת.
+            </div>
+
+            <textarea id="global_dups_input" class="sql-editor" style="height:180px" placeholder="הדבק כאן..."></textarea>
+
+            <div class="toolbar">
+                <button class="btn btn-outline" type="button" onclick="globalPasteFromClipboard()">📋 הדבק</button>
+                <button class="btn btn-outline" type="button" onclick="splitGlobalUniqDup()">✨ פצל לייחודיים/כפולים</button>
+                <button class="btn btn-outline" type="button" onclick="clearGlobalUniqDup()">🧽 נקה</button>
+            </div>
+
+            <div id="global_dups_feedback" class="ajax-line info" style="display:none;"></div>
+
+            <div class="dedupe-grid">
+                <div>
+                    <div class="dedupe-title">ייחודיים <span id="global_unique_count" class="dedupe-count"></span></div>
+                    <textarea id="global_dups_unique" class="sql-editor" style="height:160px" placeholder="כאן יופיעו ייחודיים"></textarea>
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-outline" type="button" onclick="copyTextArea('global_dups_unique', 'הייחודיים הועתקו')">📋 העתק ייחודיים</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="dedupe-title">אלו שהיה להם כפילות <span id="global_dup_count" class="dedupe-count"></span></div>
+                    <textarea id="global_dups_duplicates" class="sql-editor" style="height:160px" placeholder="כאן יופיעו כפולים"></textarea>
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-outline" type="button" onclick="copyTextArea('global_dups_duplicates', 'הכפולים הועתקו')">📋 העתק כפולים</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="dedupe-title">הופיעו פעם אחת בלבד <span id="global_missing_count" class="dedupe-count"></span></div>
+                    <textarea id="global_dups_missing" class="sql-editor" style="height:160px" placeholder="כאן יופיעו ערכים שהופיעו פעם אחת בלבד"></textarea>
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-outline" type="button" onclick="copyTextArea('global_dups_missing', 'הערכים הועתקו')">📋 העתק</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="global_dups_stats" class="stats-line"></div>
+        </div>
+    </div>
+</div>
+</center>
+
+<div class="footer-note">העיבוד מתבצע מקומית בדפדפן — הרשימה אינה נשלחת לשרת.</div>
+
+<script>
+function showDedupeLine(msg, type = 'ok') {
+    const el = document.getElementById('global_dups_feedback');
+    if (!el) return;
+    el.className = 'ajax-line ' + type;
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+async function globalPasteFromClipboard() {
+    const target = document.getElementById('global_dups_input');
+    if (!target) return;
+
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) {
+            showDedupeLine('הלוח ריק.', 'warn');
+            return;
+        }
+
+        const current = target.value.trim();
+        target.value = current ? current + "\n" + text.trim() : text.trim();
+        showDedupeLine('הטקסט הודבק בהצלחה.', 'ok');
+    } catch (e) {
+        showDedupeLine('לא ניתן לקרוא מהלוח. אפשר להדביק ידנית עם Ctrl+V.', 'warn');
+    }
+}
+
+function splitGlobalUniqDup() {
+    const input = document.getElementById('global_dups_input');
+    const uniqueBox = document.getElementById('global_dups_unique');
+    const duplicateBox = document.getElementById('global_dups_duplicates');
+    const missingBox = document.getElementById('global_dups_missing');
+    const uniqueCount = document.getElementById('global_unique_count');
+    const duplicateCount = document.getElementById('global_dup_count');
+    const missingCount = document.getElementById('global_missing_count');
+    const stats = document.getElementById('global_dups_stats');
+
+    if (!input || !uniqueBox || !duplicateBox || !missingBox) return;
+
+    const lines = input.value
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
+
+    if (!lines.length) {
+        uniqueBox.value = '';
+        duplicateBox.value = '';
+        missingBox.value = '';
+        uniqueCount.textContent = '';
+        duplicateCount.textContent = '';
+        missingCount.textContent = '';
+        stats.textContent = '';
+        showDedupeLine('אין שורות לעיבוד.', 'warn');
+        return;
+    }
+
+    const counts = {};
+    lines.forEach(line => {
+        counts[line] = (counts[line] || 0) + 1;
+    });
+
+    const seen = new Set();
+    const uniqueLines = [];
+    const duplicateLines = [];
+    const missingLines = [];
+    const duplicateSeen = new Set();
+
+    lines.forEach(line => {
+        if (!seen.has(line)) {
+            seen.add(line);
+            uniqueLines.push(line);
+
+            if (counts[line] === 1) {
+                missingLines.push(line);
+            }
+        }
+
+        if (counts[line] > 1 && !duplicateSeen.has(line)) {
+            duplicateSeen.add(line);
+            duplicateLines.push(line);
+        }
+    });
+
+    uniqueBox.value = uniqueLines.join("\n");
+    duplicateBox.value = duplicateLines.join("\n");
+    missingBox.value = missingLines.join("\n");
+    uniqueCount.textContent = '(' + uniqueLines.length + ')';
+    duplicateCount.textContent = '(' + duplicateLines.length + ')';
+    missingCount.textContent = '(' + missingLines.length + ')';
+
+    const removedCount = lines.length - uniqueLines.length;
+    stats.textContent = 'סה״כ שורות: ' + lines.length + ' | ייחודיים: ' + uniqueLines.length + ' | כפילויות שהוסרו: ' + removedCount + ' | ערכים שהופיעו יותר מפעם אחת: ' + duplicateLines.length + ' | הופיעו פעם אחת בלבד: ' + missingLines.length;
+    showDedupeLine('הפיצול הושלם.', 'ok');
+}
+
+function clearGlobalUniqDup() {
+    ['global_dups_input', 'global_dups_unique', 'global_dups_duplicates', 'global_dups_missing'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    ['global_unique_count', 'global_dup_count', 'global_missing_count', 'global_dups_stats'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '';
+    });
+
+    showDedupeLine('נוקה.', 'ok');
+}
+
+
+// Prefer the modern Clipboard API when available, with a fallback for file:// usage.
+async function copyTextArea(id, msg = 'הועתק') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    try {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(el.value);
+        } else {
+            el.focus();
+            el.select();
+            document.execCommand('copy');
+        }
+        showDedupeLine(msg, 'ok');
+    } catch (e) {
+        el.focus();
+        el.select();
+        showDedupeLine('לא ניתן להעתיק אוטומטית. אפשר להעתיק עם Ctrl+C.', 'warn');
+    }
+}
+</script>
+</body>
+</html>
