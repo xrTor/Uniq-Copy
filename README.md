@@ -25,6 +25,8 @@ https://xrtor.github.io/Uniq-Copy/
 הפרויקט מוכן ל-GitHub Pages ללא build וללא התקנות.
 ## פרטיות
 
+![הדגמה](image_653.png) 
+
 כל העיבוד נעשה ב-JavaScript מקומית בדפדפן. המידע שהודבק אינו נשלח לשרת.
 
 ## קבצים
