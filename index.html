@@ -111,6 +111,13 @@ body {
         background: #e2e6ea;
     }
 
+    .btn-toggle-active {
+        background: #e9f4fb;
+        border-color: #8ec5e8;
+        color: #114b7b;
+        font-weight: 700;
+    }
+
     .ajax-line {
         margin-top: 10px;
         padding: 8px 10px;
@@ -215,6 +222,8 @@ textarea { direction: ltr; text-align: left; }
                 <button class="btn btn-outline" type="button" onclick="globalPasteFromClipboard()">📋 הדבק</button>
                 <button class="btn btn-outline" type="button" onclick="splitGlobalUniqDup()">✨ פצל לייחודיים/כפולים</button>
                 <button class="btn btn-outline" type="button" onclick="clearGlobalUniqDup()">🧽 נקה</button>
+                <button id="direction_toggle_btn" class="btn btn-outline btn-toggle-active" type="button" onclick="toggleTextDirection()">↔️ LTR / RTL: LTR</button>
+                <button id="wrap_toggle_btn" class="btn btn-outline btn-toggle-active" type="button" onclick="toggleWordWrap()">↩️ Word wrap: YES</button>
             </div>
 
             <div id="global_dups_feedback" class="ajax-line info" style="display:none;"></div>
@@ -260,6 +269,71 @@ function showDedupeLine(msg, type = 'ok') {
     el.className = 'ajax-line ' + type;
     el.textContent = msg;
     el.style.display = 'block';
+}
+
+const DEDUPE_PREFS_KEY = 'uniqCopyDisplayPrefs';
+let textDirection = 'ltr';
+let wordWrapEnabled = true;
+
+function getAllDedupeTextareas() {
+    return Array.from(document.querySelectorAll('#global_dedupe_box textarea'));
+}
+
+function applyDisplayPreferences(save = true) {
+    getAllDedupeTextareas().forEach(textarea => {
+        textarea.dir = textDirection;
+        textarea.style.direction = textDirection;
+        textarea.style.textAlign = textDirection === 'rtl' ? 'right' : 'left';
+        textarea.wrap = wordWrapEnabled ? 'soft' : 'off';
+        textarea.style.whiteSpace = wordWrapEnabled ? 'pre-wrap' : 'pre';
+        textarea.style.overflowX = wordWrapEnabled ? 'hidden' : 'auto';
+    });
+
+    const directionBtn = document.getElementById('direction_toggle_btn');
+    const wrapBtn = document.getElementById('wrap_toggle_btn');
+
+    if (directionBtn) {
+        directionBtn.textContent = '↔️ LTR / RTL: ' + textDirection.toUpperCase();
+        directionBtn.classList.add('btn-toggle-active');
+    }
+
+    if (wrapBtn) {
+        wrapBtn.textContent = '↩️ Word wrap: ' + (wordWrapEnabled ? 'YES' : 'NO');
+        wrapBtn.classList.toggle('btn-toggle-active', wordWrapEnabled);
+    }
+
+    if (save) {
+        try {
+            localStorage.setItem(DEDUPE_PREFS_KEY, JSON.stringify({
+                direction: textDirection,
+                wordWrap: wordWrapEnabled
+            }));
+        } catch (e) {}
+    }
+}
+
+function loadDisplayPreferences() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(DEDUPE_PREFS_KEY) || '{}');
+        if (saved.direction === 'ltr' || saved.direction === 'rtl') {
+            textDirection = saved.direction;
+        }
+        if (typeof saved.wordWrap === 'boolean') {
+            wordWrapEnabled = saved.wordWrap;
+        }
+    } catch (e) {}
+
+    applyDisplayPreferences(false);
+}
+
+function toggleTextDirection() {
+    textDirection = textDirection === 'ltr' ? 'rtl' : 'ltr';
+    applyDisplayPreferences();
+}
+
+function toggleWordWrap() {
+    wordWrapEnabled = !wordWrapEnabled;
+    applyDisplayPreferences();
 }
 
 async function globalPasteFromClipboard() {
@@ -383,6 +457,8 @@ async function copyTextArea(id, msg = 'הועתק') {
         showDedupeLine('לא ניתן להעתיק אוטומטית. אפשר להעתיק עם Ctrl+C.', 'warn');
     }
 }
+
+document.addEventListener('DOMContentLoaded', loadDisplayPreferences);
 </script>
 </body>
 </html>
